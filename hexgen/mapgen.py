@@ -1,5 +1,6 @@
 import uuid
 import copy
+import csv
 import json
 import math
 import random
@@ -992,6 +993,40 @@ class MapGen:
             with Timer("Writing data to JSON file", self.debug):
                 json.dump(data, outfile)
         return data
+
+    def export_csv(self, filename):
+        """Export one flattened row of map data for each hex to a CSV file."""
+        fieldnames = [
+            'x', 'y', 'id', 'altitude', 'temperature_end_year',
+            'temperature_mid_year', 'moisture', 'biome', 'type',
+            'is_inland', 'is_coast', 'geoform', 'territory', 'features',
+            'resource_type', 'resource_rating', 'river_sides'
+        ]
+
+        with open(filename, 'w', newline='', encoding='utf-8') as outfile:
+            writer = csv.DictWriter(outfile, fieldnames=fieldnames)
+            writer.writeheader()
+            for h in self.hex_grid.hexes:
+                resource = h.resource or {}
+                writer.writerow({
+                    'x': h.x,
+                    'y': h.y,
+                    'id': h.id.hex,
+                    'altitude': h.altitude,
+                    'temperature_end_year': h.temperature[0],
+                    'temperature_mid_year': h.temperature[1],
+                    'moisture': h.moisture,
+                    'biome': h.biome.name,
+                    'type': h.type.name,
+                    'is_inland': h.is_inland,
+                    'is_coast': h.is_coast,
+                    'geoform': h.geoform.id.hex if h.geoform else '',
+                    'territory': h.territory.id if h.territory else '',
+                    'features': ';'.join(sorted(feature.name for feature in h.features)),
+                    'resource_type': resource.get('type').name if resource else '',
+                    'resource_rating': resource.get('rating').name if resource else '',
+                    'river_sides': ';'.join(side.name for side in self.find_river(h.x, h.y))
+                })
 
 from hexgen.river import RiverSegment
 from hexgen.hex import Hex, HexSide, HexFeature

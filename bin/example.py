@@ -14,5 +14,5 @@ options = {
     "num_territories": 0
 }
 
-gen = generate(options, image=True)
+gen = generate(options, image=True, csv=True)
 # gen.export('bin/export3.json')

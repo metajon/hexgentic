@@ -80,3 +80,12 @@ One interesting thing it can do is take all the data about a hexagon and determi
     - export_type (string, one of "png", "json")
     - png export:
         - draw_borders: (bool): Draw borders between territories and on coastlines
+
+### CSV export
+
+Pass `csv=True` to `generate` to write `output/map_hexes.csv` alongside the generated images. Each row represents one hex and includes its `x` and `y` coordinates, terrain data (altitude, temperatures, moisture, biome, and type), geographic and territory assignments, features, resources, and river sides. Provide `csv_filename` to choose a different output path.
+
+```python
+gen = generate(options, image=True, csv=True)
+# Or: generate(options, image=False, csv=True, csv_filename='my_map.csv')
+```
