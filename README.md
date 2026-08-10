@@ -13,8 +13,8 @@ I'm using this as a board for a browser-based game I am working on. It can be us
 
 This project requires the following:
 
-* [Python 3.5](https://www.python.org/downloads/release/python-350/)
-* [Pillow 2.8.2](http://pillow.readthedocs.io/en/3.2.x/installation.html)
+* [Python 3.10 or newer](https://www.python.org/downloads/)
+* Pillow and NumPy (installed from `requirements.txt`)
 
 It's recommended to use [virtualenv](https://pypi.python.org/pypi/virtualenv) and [virtualenvwrapper](http://virtualenvwrapper.readthedocs.io/en/latest/install.html) to keep the dependencies of this project separate from those that are installed globally on your system. With virtualenvwrapper, you can install this project with the following:
 
