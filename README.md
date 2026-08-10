@@ -85,7 +85,12 @@ One interesting thing it can do is take all the data about a hexagon and determi
 
 Pass `csv=True` to `generate` to write `output/map_hexes.csv` alongside the generated images. Each row represents one hex and includes its `x` and `y` coordinates, terrain data (altitude, temperatures, moisture, biome, and type), geographic and territory assignments, features, resources, and river sides. Provide `csv_filename` to choose a different output path.
 
+To edit a map, modify the editable columns (`altitude`, `moisture`, `features`, `resource_type`, `resource_rating`, `territory`, and `river_sides`), then pass the file as `csv_input`. The generator applies the CSV before rendering, rebuilds terrain-dependent geoforms, and writes updated PNGs. Derived fields, including temperature, biome, type, coastline, and geoform, are recalculated from the edited data.
+
 ```python
 gen = generate(options, image=True, csv=True)
 # Or: generate(options, image=False, csv=True, csv_filename='my_map.csv')
+
+# Render the map after editing a CSV export.
+gen = generate(options, image=True, csv_input='my_map.csv')
 ```

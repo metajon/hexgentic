@@ -230,16 +230,21 @@ def draw_grid(hex_grid):
 #     session.commit()
 
 
-def generate(params, debug=True, image=True, csv=False, csv_filename=None):
+def generate(params, debug=True, image=True, csv=False, csv_filename=None,
+             csv_input=None):
     """
     Given a colony, creates a world map
     :param params: generator parameters
     :param image: generate the standard PNG map images
     :param csv: generate a CSV listing every hex and its contents
     :param csv_filename: optional destination for the CSV export
+    :param csv_input: CSV export to apply before generating images
     :return: the generated map
     """
     hex_grid = MapGen(params=params, debug=debug)
+
+    if csv_input:
+        hex_grid.import_csv(csv_input)
 
     if image:
         draw_grid(hex_grid)

@@ -1028,5 +1028,81 @@ class MapGen:
                     'river_sides': ';'.join(side.name for side in self.find_river(h.x, h.y))
                 })
 
+    def import_csv(self, filename):
+        """Apply editable hex data from a CSV created by :meth:`export_csv`."""
+        editable_fields = {
+            'x', 'y', 'altitude', 'moisture', 'territory', 'features',
+            'resource_type', 'resource_rating', 'river_sides'
+        }
+        with open(filename, newline='', encoding='utf-8') as infile:
+            reader = csv.DictReader(infile)
+            missing_fields = editable_fields.difference(reader.fieldnames or [])
+            if missing_fields:
+                raise ValueError(
+                    'CSV is missing required columns: {}'.format(
+                        ', '.join(sorted(missing_fields))
+                    )
+                )
+
+            rows = list(reader)
+
+        territories = {str(territory.id): territory for territory in self.territories}
+        for territory in self.territories:
+            territory.members = []
+
+        self.rivers = []
+        self.rivers_sources = []
+        seen_coordinates = set()
+        for line_number, row in enumerate(rows, start=2):
+            try:
+                x = int(row['x'])
+                y = int(row['y'])
+                coordinate = (x, y)
+                if coordinate in seen_coordinates:
+                    raise ValueError('duplicate coordinates')
+                seen_coordinates.add(coordinate)
+
+                h = self.hex_grid.find_hex(x, y)
+                h.altitude = int(row['altitude'])
+                h.moisture = int(row['moisture'])
+                h.features = set(
+                    HexFeature[name] for name in row['features'].split(';') if name
+                )
+
+                resource_type = row['resource_type']
+                resource_rating = row['resource_rating']
+                if bool(resource_type) != bool(resource_rating):
+                    raise ValueError('resource type and rating must both be supplied')
+                h.resource = None if not resource_type else {
+                    'type': HexResourceType[resource_type],
+                    'rating': HexResourceRating[resource_rating]
+                }
+
+                territory_id = row['territory']
+                h.territory = territories.get(territory_id) if territory_id else None
+                if territory_id and h.territory is None:
+                    raise ValueError('unknown territory {}'.format(territory_id))
+                if h.territory:
+                    h.territory.members.append(h)
+
+                for side_name in row['river_sides'].split(';'):
+                    if side_name:
+                        self.rivers.append(RiverSegment(self.hex_grid, x, y,
+                                                        HexSide[side_name]))
+            except (KeyError, TypeError, ValueError) as error:
+                raise ValueError('Invalid CSV row {}: {}'.format(line_number, error))
+
+        self.hex_grid.calculate()
+        for river in self.rivers:
+            river.edge.is_river = True
+
+        # Geoforms depend on the edited elevation and must be rebuilt before drawing.
+        for h in self.hex_grid.hexes:
+            h.geoform = None
+            h.geoform_type = None
+        self.geoforms = []
+        self._determine_landforms()
+        return len(rows)
+
 from hexgen.river import RiverSegment
 from hexgen.hex import Hex, HexSide, HexFeature

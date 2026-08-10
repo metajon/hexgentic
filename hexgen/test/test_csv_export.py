@@ -6,6 +6,7 @@ from types import SimpleNamespace
 from unittest import TestCase
 
 from hexgen.mapgen import MapGen
+from hexgen.hex import HexFeature
 
 
 class TestCsvExport(TestCase):
@@ -45,3 +46,36 @@ class TestCsvExport(TestCase):
         self.assertEqual(rows[0]['y'], '3')
         self.assertEqual(rows[0]['altitude'], '42')
         self.assertEqual(rows[0]['biome'], 'grasslands')
+
+    def test_import_csv_updates_hex_contents(self):
+        hexagon = SimpleNamespace(
+            x=2, y=3, altitude=1, moisture=0, features=set(), resource=None,
+            territory=None, geoform=None, geoform_type=None,
+            get_edge=lambda side: SimpleNamespace(is_river=False)
+        )
+        mapgen = MapGen.__new__(MapGen)
+        mapgen.hex_grid = SimpleNamespace(
+            hexes=[hexagon],
+            find_hex=lambda x, y: hexagon,
+            calculate=lambda: None
+        )
+        mapgen.territories = []
+        mapgen._determine_landforms = lambda: None
+
+        handle, filename = tempfile.mkstemp(suffix='.csv')
+        os.close(handle)
+        try:
+            with open(filename, 'w', newline='', encoding='utf-8') as outfile:
+                outfile.write(
+                    'x,y,altitude,moisture,territory,features,resource_type,'
+                    'resource_rating,river_sides\n'
+                    '2,3,99,12,,volcano;crater,,,east\n'
+                )
+            self.assertEqual(mapgen.import_csv(filename), 1)
+        finally:
+            os.remove(filename)
+
+        self.assertEqual(hexagon.altitude, 99)
+        self.assertEqual(hexagon.moisture, 12)
+        self.assertEqual(hexagon.features, {HexFeature.volcano, HexFeature.crater})
+        self.assertEqual(mapgen.rivers[0].side.name, 'east')
