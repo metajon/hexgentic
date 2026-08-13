@@ -16,6 +16,7 @@ class HexGridDraw:
         self.Grid = grid
         self.color_func = color_func
         self.text_func = text_func
+        self.font = self._load_font() if text_func else None
 
         self.numbers = numbers
         self.show_coasts = show_coasts
@@ -63,6 +64,14 @@ class HexGridDraw:
                             elif s is HexSide.north_west:
                                 self.draw.line([pointer_5, origin], river_blue, width=3)
             self.image.save('bin/' + file_name)
+
+    @staticmethod
+    def _load_font():
+        """Use FreeSans when available, with a portable Pillow fallback."""
+        try:
+            return ImageFont.truetype("FreeSans.ttf", 14)
+        except OSError:
+            return ImageFont.load_default(size=14)
 
     def draw_hex_edge(self, x, y, side, width=3, color=(0, 0, 0)):
         s = side
@@ -124,5 +133,5 @@ class HexGridDraw:
             self.draw.text((cx + 18, cy + 19), str(h.temperature), fill=(200, 200, 200))
 
         if self.text_func:
-            font = ImageFont.truetype("FreeSans.ttf", 14)
-            self.draw.text((cx + 5, cy + 5), str(self.text_func(h)), fill=(200, 200, 200), font=font)
+            self.draw.text((cx + 5, cy + 5), str(self.text_func(h)),
+                           fill=(200, 200, 200), font=self.font)
