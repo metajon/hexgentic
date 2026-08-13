@@ -13,7 +13,7 @@ conda create --name hexgen python=3.12
 conda activate hexgen
 
 python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
+python -m pip install -e .
 ```
 
 Activate the environment whenever you work on the project:
@@ -34,7 +34,7 @@ python -m venv .venv
 .venv\Scripts\Activate.ps1
 
 python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
+python -m pip install -e .
 ```
 
 ## 2. Generate a map
@@ -63,6 +63,7 @@ The generated PNG maps are written to the `output` directory.
 To run the included example directly, first activate the conda environment and then run:
 
 ```bash
+# Run this from the project root, not from the bin directory.
 python bin/example.py
 ```
 

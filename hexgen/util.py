@@ -4,7 +4,7 @@ import time
 
 from hexgen.enums import HexEdge, Hemisphere
 
-import collections
+from collections.abc import Hashable
 import functools
 from itertools import combinations
 
@@ -17,7 +17,7 @@ class memoized(object):
         self.func = func
         self.cache = {}
     def __call__(self, *args):
-        if not isinstance(args, collections.Hashable):
+        if not isinstance(args, Hashable):
             # uncacheable. a list, for instance.
             # better to not cache than blow up.
             return self.func(*args)
@@ -164,11 +164,11 @@ class Timer:
         if self.debug:
             print(self.text.ljust(50), end="")
             print('starting...')
-        self.start = time.clock()
+        self.start = time.perf_counter()
         return self
 
     def __exit__(self, *args):
-        self.end = time.clock()
+        self.end = time.perf_counter()
         self.interval = self.end - self.start
         if self.debug:
             print(self.text.ljust(50), end="")
